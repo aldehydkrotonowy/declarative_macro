@@ -1,0 +1,15 @@
+[package]
+name = "declarative_macro"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+
+
+[lib]
+name = "fib_macro_lib"
+path = "src/lib.rs"
+
+[[bin]]
+name = "fib"
+path = "src/bin.rs"
