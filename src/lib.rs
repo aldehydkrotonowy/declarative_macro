@@ -21,12 +21,34 @@ macro_rules! sky {
     };
 }
 
-pub fn macro_wrapper() {
-    // let u = 44;
-    // pink_elephant!();
-    // blue_wail!("FRED");
-    // sky!(u);
+#[macro_export]
+macro_rules! amyvec {
+    () => {
+        Vec::new()
+    };
 
+    ($($el:expr),+ $(,)?) => {{
+        let mut x = Vec::new();
+        $(x.push($el);)+
+        x
+    }};
+    ($e:expr; $count:expr) => {{
+        let count = $count;
+        let x = $e;
+        let mut vec = Vec::with_capacity(count);
+        //no re-allocation, no boundary checks
+        vec.extend(std::iter::repeat($e).take(count));
+        // bad practice
+        // re-allocates every time when exeeds capacity (default +16? or something like that)
+        // for _ in 0..count {
+        //     vec.push(x.clone());
+        // }
+        vec
+    }}
+}
+
+/// doc text about this function
+pub fn macro_wrapper() {
     let fib = {
         struct IndexOffset {
             slice: [u64; 2],
@@ -87,4 +109,58 @@ pub fn macro_wrapper() {
     for e in fib.take(10) {
         println!("final: {}", e);
     }
+}
+
+#[test]
+fn test1() {
+    pink_elephant!();
+}
+#[test]
+fn sky_ident() {
+    let u = 44;
+    sky!(u);
+}
+#[test]
+fn blue_wail_literal() {
+    blue_wail!("FRED");
+}
+
+#[test]
+fn empty_vec() {
+    let x: Vec<u32> = amyvec!();
+    assert!(x.is_empty());
+}
+
+#[test]
+fn single_element() {
+    let x: Vec<u32> = amyvec![44];
+    assert!(!x.is_empty());
+    assert_eq!(x.len(), 1);
+    assert_eq!(x[0], 44);
+}
+
+#[test]
+fn double_element() {
+    let y: Vec<u32> = amyvec!(22, 33);
+    assert!(!y.is_empty());
+    assert_eq!(y.len(), 2);
+    assert_eq!(y[0], 22);
+    assert_eq!(y[1], 33);
+}
+
+#[test]
+fn trailing_coma_present() {
+    let y: Vec<u32> = amyvec!(22, 33,);
+    assert!(!y.is_empty());
+    assert_eq!(y.len(), 2);
+    assert_eq!(y[0], 22);
+    assert_eq!(y[1], 33);
+}
+#[test]
+fn vec_with_capacity() {
+    let y: Vec<u32> = amyvec!(22; 2);
+    assert!(!y.is_empty());
+    assert_eq!(y.len(), 2);
+    assert_eq!(y[0], 22);
+    assert_eq!(y[1], 22);
 }
